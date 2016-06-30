@@ -18,6 +18,7 @@ public class Watershed {
 	 */
 	public static ImagePlus computeWatershed(ImagePlus chosenImg, double hMin, double hMax, double threshVal) {
 
+		IJ.log("Test");
 		ImageProcessor ip = apply(chosenImg.getProcessor(), hMin, hMax, threshVal);
 
 		String title = chosenImg.getTitle();
@@ -61,15 +62,17 @@ public class Watershed {
 		
 		int label = 0;
 		
-		IJ.showStatus( "Extracting coloration values");	
+		IJ.showStatus( "Extracting coloration values");
+		IJ.log("Extracting coloration values");
 		
 		ArrayList<PixelsValues> pixelList = extractPixelValues(input, hMin, hMax );
 
 		IJ.showStatus("Sorting pixels by coloration value");
+		IJ.log("Sorting pixels by coloration value");
 		
 		Collections.sort(pixelList);
 		
-		System.out.println("Value at pos 20: " + pixelList.get(20).getValue());
+		IJ.log("Value at pos 20: " + pixelList.get(20).getValue());
 		
 		IJ.showStatus("Thresholding");
 		

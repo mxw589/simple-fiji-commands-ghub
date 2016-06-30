@@ -37,7 +37,7 @@ public class WaterShedPlugin implements PlugIn {
 		 */
 		if( imgCount == 0 ){
 			IJ.error( "WaterShed Test", 
-					"ERROR: At least one image needs to be open to run watershed.");
+					"ERROR: At least one image needs to be open to run a watershed.");
 			return;
 		}
 		
