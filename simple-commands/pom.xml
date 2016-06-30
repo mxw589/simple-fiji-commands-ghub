@@ -6,13 +6,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>sc.fiji</groupId>
-		<artifactId>pom-fiji</artifactId>
-		<version>24.0.1-SNAPSHOT</version>
+		<groupId>net.imagej</groupId>
+		<artifactId>pom-imagej</artifactId>
+		<version>15.7.1</version>
 		<relativePath />
 	</parent>
 
-	<groupId>imagej-tutorials</groupId>
+	<groupId>imagej-experiment</groupId>
 	<artifactId>simple-commands</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 
@@ -20,7 +20,7 @@
 	<description>This example provides an introduction to writing ImageJ commands.</description>
 
 	<properties>
-		<main-class>HelloWorld</main-class>
+		<main-class>WaterShedPlugin</main-class>
 		<scijava.jvm.version>1.8</scijava.jvm.version>
 	</properties>
 
@@ -32,9 +32,19 @@
 	</repositories>
 
 	<dependencies>
+		<!-- When writing ImageJ/Fiji plugins, it is necessary to add a dependency 
+			 to ImageJ jar -->
 		<dependency>
 			<groupId>net.imagej</groupId>
-			<artifactId>imagej</artifactId>
-		</dependency>
+			<artifactId>ij</artifactId>
+			</dependency>
+	
+		<!-- Add a dependency to JUnit for unit tests --> 
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
 	</dependencies>
 </project>
