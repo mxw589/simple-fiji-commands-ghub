@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -18,7 +19,6 @@ public class Watershed {
 	 */
 	public static ImagePlus computeWatershed(ImagePlus chosenImg, double hMin, double hMax, double threshVal) {
 
-		IJ.log("Test");
 		ImageProcessor ip = apply(chosenImg.getProcessor(), hMin, hMax, threshVal);
 
 		String title = chosenImg.getTitle();
@@ -51,16 +51,19 @@ public class Watershed {
 	 */
 	public static ImageProcessor apply(ImageProcessor input, double hMin, double hMax, double threshVal){
 		final int width = input.getWidth();
+		IJ.log("Width: " + width);
 		final int height = input.getHeight();
+		IJ.log("Height: " + height);
 
 		// output labels
 		final int[][] tabLabels = new int[width][height];
 		
 		for( int i=0; i<width; i++ ){
-			Arrays.fill(tabLabels[i], -1);
+			Arrays.fill(tabLabels[i], 0);
 		}
 		
-		int label = 0;
+		//label to be applied to points under the threshold
+		int label = 1;
 		
 		IJ.showStatus( "Extracting coloration values");
 		IJ.log("Extracting coloration values");
@@ -72,9 +75,38 @@ public class Watershed {
 		
 		Collections.sort(pixelList);
 		
-		IJ.log("Value at pos 20: " + pixelList.get(20).getValue());
+		boolean stopCheck = false;
+		Iterator<PixelsValues> pixelIterator = pixelList.iterator();
+		PixelsValues currentPixel = null;
 		
 		IJ.showStatus("Thresholding");
+		IJ.log("Thresholding");
+		long start = System.currentTimeMillis();
+		
+		while(pixelIterator.hasNext() && stopCheck == false){
+			currentPixel = pixelIterator.next();
+			if(currentPixel.getValue() < threshVal){
+				tabLabels[currentPixel.getPixelPos().getX()][currentPixel.getPixelPos().getY()] = label;
+			} else {
+				stopCheck = true;
+			}
+		}
+	
+		long end = System.currentTimeMillis();
+		IJ.log("Thresholding took " + (end-start) + " ms.");
+		
+		String currLine = "";
+		
+		/*
+		 * DEBUG log the thresholding result
+		 */
+		for(int heightPr = 0; heightPr < height; heightPr++){
+			for(int widthPr = 0; widthPr < width; widthPr++){
+				currLine += " " + tabLabels[widthPr][heightPr];
+			}
+			IJ.log(currLine);
+			currLine = "";
+		}
 		
 		return input;
 		
@@ -105,7 +137,7 @@ public class Watershed {
 				/*
 				 * get the coloration value of the given pixel
 				 */
-				final double h = input.getf( x, y );
+				final double h = input.getf(x, y);
 				if( h >= hMin && h <= hMax ){
 					PixelPos currPos = new PixelPos(x, y);
 					list.add(new PixelsValues(currPos, h, pixelNo));

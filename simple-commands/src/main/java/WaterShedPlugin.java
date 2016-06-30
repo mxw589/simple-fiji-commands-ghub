@@ -1,6 +1,7 @@
 import java.awt.Scrollbar;
 
 import ij.IJ;
+import ij.ImageJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.GenericDialog;
@@ -67,7 +68,7 @@ public class WaterShedPlugin implements PlugIn {
 		if(gd.wasOKed()){
 			ImagePlus chosenImg = WindowManager.getImage(gd.getNextChoiceIndex()+1);
 			Scrollbar threshScroll = (Scrollbar) gd.getSliders().get(0);
-			double threshVal = threshScroll.getValue();
+			double threshVal = 255 - threshScroll.getValue();
 			
 			ImagePlus result = process(chosenImg, hMin, hMax, threshVal);
 			
@@ -88,11 +89,18 @@ public class WaterShedPlugin implements PlugIn {
 		final long start = System.currentTimeMillis();
 		
 		ImagePlus resultImg = Watershed.computeWatershed(chosenImg, hMin, hMax, threshVal);
-		
 		final long end = System.currentTimeMillis();
 		IJ.log("Watershedding took " + (end-start) + " ms.");
 		
 		return resultImg;
+	}
+	
+	public static void main(String[] args) {
+	    new ImageJ();
+	    ImagePlus image = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/dots_gradient.bmp");
+	    image.show();
+	    IJ.runPlugIn(image, "WaterShedPlugin", "");
+	    WindowManager.addWindow(image.getWindow());
 	}
 	
 }
