@@ -24,7 +24,9 @@ public class WaterShedPlugin implements PlugIn {
 	 * a slider
 	 * @param arg required, not used
 	 */
+	
 	public void run(String arg) {
+		
 		/*
 		 * count images to be processed
 		 */
@@ -93,7 +95,4 @@ public class WaterShedPlugin implements PlugIn {
 		return resultImg;
 	}
 	
-	public static void main(String[] args) {
-		
-	}
 }

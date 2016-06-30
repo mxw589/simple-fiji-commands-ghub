@@ -12,9 +12,9 @@
 		<relativePath />
 	</parent>
 
-	<groupId>imagej-experiment</groupId>
-	<artifactId>simple-commands</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<groupId>imagej_experiment</groupId>
+	<artifactId>simple_commands</artifactId>
+	<version>1.0.0_SNAPSHOT</version>
 
 	<name>Simple ImageJ Commands</name>
 	<description>This example provides an introduction to writing ImageJ commands.</description>
