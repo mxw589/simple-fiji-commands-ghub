@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
 
 public class Watershed {
@@ -59,11 +60,11 @@ public class Watershed {
 		final int[][] tabLabels = new int[width][height];
 		
 		for( int i=0; i<width; i++ ){
-			Arrays.fill(tabLabels[i], 0);
+			Arrays.fill(tabLabels[i], 1);
 		}
 		
 		//label to be applied to points under the threshold
-		int label = 1;
+		int label = 0;
 		
 		IJ.showStatus( "Extracting coloration values");
 		IJ.log("Extracting coloration values");
@@ -108,7 +109,14 @@ public class Watershed {
 			currLine = "";
 		}
 		
-		return input;
+		FloatProcessor fp = new FloatProcessor(width, height);
+		for(int widthFP = 0; widthFP < width; widthFP++){
+			for(int heightFP = 0; heightFP < height; heightFP++){
+				fp.set(widthFP, heightFP, tabLabels[widthFP][heightFP]);
+			}
+		}
+		
+		return fp;
 		
 	}
 
