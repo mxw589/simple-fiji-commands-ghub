@@ -1,3 +1,4 @@
+package dataTypes;
 /**
  * data type for a pixels position and its value
  * @author Mark
@@ -27,8 +28,12 @@ public class PixelsValues implements Comparable<PixelsValues>{
 		return number;
 	}
 
+	/**
+	 * @param o the PixelsValues object to for comparison
+	 * @return an integer value that indicates whether a pixel is lighter or darker
+	 * than another
+	 */
 	public int compareTo(PixelsValues o) {
-
 		int returnVal = Double.compare(getValue(), o.getValue());
 		if( returnVal == 0 ){
 			if(getNumber() < o.getNumber()){

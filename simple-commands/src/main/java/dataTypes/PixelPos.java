@@ -1,3 +1,4 @@
+package dataTypes;
 
 
 public class PixelPos{
@@ -15,6 +16,10 @@ public class PixelPos{
 
 	public int getY() {
 		return y;
+	}
+	
+	public String toString(){
+		return "" + x + "," + y;
 	}
 
 	public boolean equals(PixelPos o) {

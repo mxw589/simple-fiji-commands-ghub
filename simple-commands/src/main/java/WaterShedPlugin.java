@@ -6,6 +6,7 @@ import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
+import watershed.Watershed;
 
 /**
  * First attempt at creating a working plugin, aimed at performing a basic
@@ -96,11 +97,20 @@ public class WaterShedPlugin implements PlugIn {
 	}
 	
 	public static void main(String[] args) {
-	    new ImageJ();
-	    ImagePlus image = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/large_dots.bmp");
-	    image.show();
-	    IJ.runPlugIn(image, "WaterShedPlugin", "");
-	    WindowManager.addWindow(image.getWindow());
+		new ImageJ();
+	    ImagePlus image1 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/large_dots.bmp");
+	    image1.show();
+	    ImagePlus image2 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/dots.bmp");
+	    image2.show();
+	    ImagePlus image3 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/dots_gradient.bmp");
+	    image3.show();
+	    ImagePlus image4 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/gradient.bmp");
+	    image4.show();
+	    ImagePlus image5 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/larger_test.bmp");
+	    image5.show();
+	    ImagePlus image6 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/tiny.bmp");
+	    image6.show();
+	    IJ.runPlugIn("WaterShedPlugin", "");
 	}
 	
 }

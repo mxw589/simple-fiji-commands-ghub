@@ -1,8 +1,11 @@
+package watershed;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 
+import dataTypes.PixelPos;
+import dataTypes.PixelsValues;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.process.FloatProcessor;
@@ -57,10 +60,10 @@ public class Watershed {
 		IJ.log("Height: " + height);
 
 		// output labels
-		final int[][] tabLabels = new int[width][height];
+		final int[][] labelled = new int[width][height];
 		
 		for( int i=0; i<width; i++ ){
-			Arrays.fill(tabLabels[i], 1);
+			Arrays.fill(labelled[i], 1);
 		}
 		
 		//label to be applied to points under the threshold
@@ -76,38 +79,33 @@ public class Watershed {
 		
 		Collections.sort(pixelList);
 		
-		boolean stopCheck = false;
-		Iterator<PixelsValues> pixelIterator = pixelList.iterator();
-		PixelsValues currentPixel = null;
+		/*
+		 * thresholding
+		 */
+		Threshold.threshold(pixelList, labelled, threshVal, label);
 		
-		IJ.showStatus("Thresholding");
-		IJ.log("Thresholding");
-		long start = System.currentTimeMillis();
-		
-		while(pixelIterator.hasNext() && stopCheck == false){
-			currentPixel = pixelIterator.next();
-			if(currentPixel.getValue() < threshVal){
-				tabLabels[currentPixel.getPixelPos().getX()][currentPixel.getPixelPos().getY()] = label;
-			} else {
-				stopCheck = true;
-			}
-		}
-	
-		long end = System.currentTimeMillis();
-		IJ.log("Thresholding took " + (end-start) + " ms.");
-		
-		String currLine = "";
+		/*
+		 * DEBUG printing the labels after thresholding
+		 */
+//		String currLine = "";
 //		
-//		/*
-//		 * DEBUG log the thresholding result
-//		 */
-//		for(int heightPr = 0; heightPr < height; heightPr++){
-//			for(int widthPr = 0; widthPr < width; widthPr++){
-//				currLine += " " + tabLabels[widthPr][heightPr];
+//		for(int heightPr = 0; heightPr < labelled[0].length; heightPr++){
+//			for(int widthPr = 0; widthPr < labelled.length; widthPr++){
+//				currLine += " " + labelled[widthPr][heightPr];
 //			}
 //			IJ.log(currLine);
 //			currLine = "";
 //		}
+		
+		/*
+		 * eroding
+		 */
+		Erode.erode(labelled, 1, 0, width, height);
+		
+		/*
+		 * dilating
+		 */
+		Dilate.dilate(labelled, 1, 0, width, height);
 		
 		/*
 		 * taking the array of labels and turning it into an image for the user
@@ -115,7 +113,7 @@ public class Watershed {
 		FloatProcessor fp = new FloatProcessor(width, height);
 		for(int widthFP = 0; widthFP < width; widthFP++){
 			for(int heightFP = 0; heightFP < height; heightFP++){
-				fp.set(widthFP, heightFP, tabLabels[widthFP][heightFP]);
+				fp.set(widthFP, heightFP, labelled[widthFP][heightFP]);
 			}
 		}
 		
