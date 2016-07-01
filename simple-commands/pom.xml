@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>net.imagej</groupId>
 		<artifactId>pom-imagej</artifactId>
-		<version>15.7.1</version>
+		<version>15.8.0</version>
 		<relativePath />
 	</parent>
 
@@ -16,8 +16,8 @@
 	<artifactId>simple_commands</artifactId>
 	<version>1.0.0_SNAPSHOT</version>
 
-	<name>Simple ImageJ Commands</name>
-	<description>This example provides an introduction to writing ImageJ commands.</description>
+	<name>Watershedding</name>
+	<description>This is a plugin that performs a watershedding operation.</description>
 
 	<properties>
 		<main-class>WaterShedPlugin</main-class>
@@ -30,32 +30,19 @@
 			<url>http://maven.imagej.net/content/groups/public</url>
 		</repository>
 	</repositories>
-	
-	<build>
-	<resources>
-      <resource>
-        <directory>src/main/java</directory>
-        <includes>
-          <include>**/*.config</include>
-        </includes>
-      </resource>
-    </resources>
-	</build>
-	
+
 	<dependencies>
-		<!-- When writing ImageJ/Fiji plugins, it is necessary to add a dependency 
-			 to ImageJ jar -->
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>ij</artifactId>
-			</dependency>
-	
-		<!-- Add a dependency to JUnit for unit tests --> 
-        <dependency>
+		</dependency>
+		
+		<dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        
 	</dependencies>
+	
+	
 </project>

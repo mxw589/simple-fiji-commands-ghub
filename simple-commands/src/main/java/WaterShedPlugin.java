@@ -6,6 +6,7 @@ import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
+
 /**
  * First attempt at creating a working plugin, aimed at performing a basic
  * watershedding operation
@@ -25,7 +26,6 @@ public class WaterShedPlugin implements PlugIn {
 	 * a slider
 	 * @param arg required, not used
 	 */
-	
 	public void run(String arg) {
 		
 		/*
@@ -97,7 +97,7 @@ public class WaterShedPlugin implements PlugIn {
 	
 	public static void main(String[] args) {
 	    new ImageJ();
-	    ImagePlus image = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/dots_gradient.bmp");
+	    ImagePlus image = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/large_dots.bmp");
 	    image.show();
 	    IJ.runPlugIn(image, "WaterShedPlugin", "");
 	    WindowManager.addWindow(image.getWindow());

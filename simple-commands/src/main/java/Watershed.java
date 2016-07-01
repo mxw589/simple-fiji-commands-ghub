@@ -97,18 +97,21 @@ public class Watershed {
 		IJ.log("Thresholding took " + (end-start) + " ms.");
 		
 		String currLine = "";
+//		
+//		/*
+//		 * DEBUG log the thresholding result
+//		 */
+//		for(int heightPr = 0; heightPr < height; heightPr++){
+//			for(int widthPr = 0; widthPr < width; widthPr++){
+//				currLine += " " + tabLabels[widthPr][heightPr];
+//			}
+//			IJ.log(currLine);
+//			currLine = "";
+//		}
 		
 		/*
-		 * DEBUG log the thresholding result
+		 * taking the array of labels and turning it into an image for the user
 		 */
-		for(int heightPr = 0; heightPr < height; heightPr++){
-			for(int widthPr = 0; widthPr < width; widthPr++){
-				currLine += " " + tabLabels[widthPr][heightPr];
-			}
-			IJ.log(currLine);
-			currLine = "";
-		}
-		
 		FloatProcessor fp = new FloatProcessor(width, height);
 		for(int widthFP = 0; widthFP < width; widthFP++){
 			for(int heightFP = 0; heightFP < height; heightFP++){
