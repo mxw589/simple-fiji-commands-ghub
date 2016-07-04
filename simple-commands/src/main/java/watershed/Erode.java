@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import dataTypes.PixelPos;
+import dataTypes.ThresholdDataPoint;
 import ij.IJ;
 
 /**
@@ -14,34 +15,38 @@ import ij.IJ;
  */
 public class Erode {
 
-	public static void erode(int[][] labelled, int backgroundLabel, int foregroundLabel, int width, int height){
+	public static void erode(ThresholdDataPoint[][] labelled, int backgroundLabel, int foregroundLabel, int width, int height){
 		IJ.showStatus("Eroding");
 		IJ.log("Eroding");
 		long start = System.currentTimeMillis();
-		int[][] newLabels = new int[width][height];
+		ThresholdDataPoint[][] newLabels = new ThresholdDataPoint[width][height];
 
-		for( int i=0; i<width; i++ ){
-			Arrays.fill(newLabels[i], backgroundLabel);
+		for(int x = 0; x < width; x++){
+			for(int y = 0; y < height; y++){
+				PixelPos pixelPos = new PixelPos(x,y);
+				newLabels[x][y] = new ThresholdDataPoint(backgroundLabel, pixelPos);
+			}
 		}
 
 		for(int y = 0; y < height; y++){
 			for(int x = 0; x < width; x++){
 				/* check to see if the label may need to be changed */
-				if(labelled[x][y] == foregroundLabel){
+				if(labelled[x][y].getLabel() == foregroundLabel){
+					PixelPos pixelPos = new PixelPos(x,y);
 					/*generate an arraylist of valid neighbours for the point*/
-					ArrayList<PixelPos> neighbours = Neighbours.neighbours(x, y, width, height);
+					ArrayList<PixelPos> neighbours = Neighbours.neighbours(pixelPos, width, height);
 					/*check if the neighbours mean the point should be eroded*/
 					boolean neighbourCheck = true;
 					for(PixelPos p : neighbours){
 						int neighX = p.getX();
 						int neighY = p.getY();
-						int currentNeighLabel = labelled[neighX][neighY];
+						int currentNeighLabel = labelled[neighX][neighY].getLabel();
 						if(currentNeighLabel == backgroundLabel){
 							neighbourCheck = false;
 						}
 					}
 					if(neighbourCheck){
-						newLabels[x][y] = foregroundLabel;
+						newLabels[x][y].setLabel(foregroundLabel);
 					}
 				}
 			}
@@ -59,14 +64,14 @@ public class Erode {
 		/*
 		 * DEBUG log the result
 		 */
-//		String currLine = "";
-//
-//		for(int heightPr = 0; heightPr < height; heightPr++){
-//			for(int widthPr = 0; widthPr < width; widthPr++){
-//				currLine += " " + labelled[widthPr][heightPr];
-//			}
-//			IJ.log(currLine);
-//			currLine = "";
-//		}
+		String currLine = "";
+
+		for(int heightPr = 0; heightPr < height; heightPr++){
+			for(int widthPr = 0; widthPr < width; widthPr++){
+				currLine += " " + labelled[widthPr][heightPr].getLabel();
+			}
+			IJ.log(currLine);
+			currLine = "";
+		}
 	}
 }

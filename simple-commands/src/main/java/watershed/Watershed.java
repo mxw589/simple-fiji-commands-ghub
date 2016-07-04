@@ -1,11 +1,10 @@
 package watershed;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 
 import dataTypes.PixelPos;
 import dataTypes.PixelsValues;
+import dataTypes.ThresholdDataPoint;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.process.FloatProcessor;
@@ -60,14 +59,17 @@ public class Watershed {
 		IJ.log("Height: " + height);
 
 		// output labels
-		final int[][] labelled = new int[width][height];
+		final ThresholdDataPoint[][] labelled = new ThresholdDataPoint[width][height];
 		
-		for( int i=0; i<width; i++ ){
-			Arrays.fill(labelled[i], 1);
+		final int backgroundLabel = 1;
+		final int foregroundLabel = 0;
+		
+		for(int x = 0; x < width; x++){
+			for(int y = 0; y < height; y++){
+				PixelPos pixelPos = new PixelPos(x,y);
+				labelled[x][y] = new ThresholdDataPoint(backgroundLabel, pixelPos);
+			}
 		}
-		
-		//label to be applied to points under the threshold
-		int label = 0;
 		
 		IJ.showStatus( "Extracting coloration values");
 		IJ.log("Extracting coloration values");
@@ -82,30 +84,41 @@ public class Watershed {
 		/*
 		 * thresholding
 		 */
-		Threshold.threshold(pixelList, labelled, threshVal, label);
+		Threshold.threshold(pixelList, labelled, threshVal, foregroundLabel);
 		
 		/*
 		 * DEBUG printing the labels after thresholding
 		 */
-//		String currLine = "";
-//		
-//		for(int heightPr = 0; heightPr < labelled[0].length; heightPr++){
-//			for(int widthPr = 0; widthPr < labelled.length; widthPr++){
-//				currLine += " " + labelled[widthPr][heightPr];
-//			}
-//			IJ.log(currLine);
-//			currLine = "";
-//		}
+		String currLine = "";
+		
+		for(int heightPr = 0; heightPr < labelled[0].length; heightPr++){
+			for(int widthPr = 0; widthPr < labelled.length; widthPr++){
+				currLine += " " + labelled[widthPr][heightPr].getLabel();
+			}
+			IJ.log(currLine);
+			currLine = "";
+		}
 		
 		/*
 		 * eroding
 		 */
-		Erode.erode(labelled, 1, 0, width, height);
+		Erode.erode(labelled, backgroundLabel, foregroundLabel, width, height);
+		
+		
+		/*
+		 * set the neighbours
+		 */
+		establishNeighbours(labelled, width, height);
+		
+		/*
+		 * set the initial labels for the cell bodies
+		 */
+		initialCellBodyLabel(labelled, backgroundLabel, foregroundLabel);
 		
 		/*
 		 * dilating
 		 */
-		Dilate.dilate(labelled, 1, 0, width, height);
+		Dilate.dilate(labelled, backgroundLabel, foregroundLabel, width, height);
 		
 		/*
 		 * taking the array of labels and turning it into an image for the user
@@ -113,7 +126,7 @@ public class Watershed {
 		FloatProcessor fp = new FloatProcessor(width, height);
 		for(int widthFP = 0; widthFP < width; widthFP++){
 			for(int heightFP = 0; heightFP < height; heightFP++){
-				fp.set(widthFP, heightFP, labelled[widthFP][heightFP]);
+				fp.set(widthFP, heightFP, labelled[widthFP][heightFP].getLabel());
 			}
 		}
 		
@@ -156,6 +169,89 @@ public class Watershed {
 		}
 
 		return list;
+	}
+	
+	/**
+	 * a static method that adds an ArrayList of the neighbours of a
+	 * ThresholdDataPoint to each ThresholdDataPoint in a 2x2 array 
+	 * @param labelled the 2x2 array of ThresholdDataPoints for which the
+	 * neighbours need to be set
+	 * @param width the width of the image
+	 * @param height the height of the image
+	 */
+	private static void establishNeighbours(ThresholdDataPoint labelled[][], int width, int height){
+		IJ.showStatus("Establishing neighbours");
+		IJ.log("Establishing neighbours");
+		long start = System.currentTimeMillis();
+		
+		ArrayList<ThresholdDataPoint> neighTDP;
+		int xPos;
+		int yPos;
+		ArrayList<PixelPos> neighPix;
+		PixelPos pixelPos;
+		
+		for(int x = 0; x < width; x++){
+			for(int y = 0; y < height; y++){
+				pixelPos = new PixelPos(x, y);
+				neighTDP = new ArrayList<ThresholdDataPoint>();
+				neighPix = Neighbours.neighbours(pixelPos, width, height);
+
+				for(PixelPos neigh : neighPix){
+					xPos = neigh.getX();
+					yPos = neigh.getY();
+					neighTDP.add(labelled[xPos][yPos]);
+				}
+				
+				labelled[x][y].setNeighbours(neighTDP);
+			}
+		}
+		
+		long end = System.currentTimeMillis();
+		IJ.log("Establishing neighbours took " + (end-start) + " ms.");
+		
+	}
+	
+	public static void initialCellBodyLabel(ThresholdDataPoint[][] labelled, int backgroundLabel, int foregroundLabel){
+		int currentNextLabel = 1;
+		
+		for(ThresholdDataPoint[] row : labelled){
+			for(ThresholdDataPoint element: row){
+				/*if the pixel is part of a cell body*/
+				if(element.getLabel() != backgroundLabel){
+					/*get its neighbours label*/
+					getNeighboursCellLabel(element);
+					/*if it is zero then this should be treated as an as yet 
+					 * unlabelled cell body*/
+					if(element.getCellBody() == 0){
+						element.setCellBody(currentNextLabel);
+						currentNextLabel++;
+					}
+				}
+			}
+		}
+	}
+	/**
+	 * sets the value of a ThresholdDataPoint's cell body to that of its
+	 * neighbours. This should return 0 if none of the neighbours have 
+	 * been labelled yet
+	 * @param dataPoint the point to be labelled
+	 */
+	public static void getNeighboursCellLabel(ThresholdDataPoint dataPoint){
+		int neighCellLabel = 0;
+		ArrayList<ThresholdDataPoint> neigh = dataPoint.getNeighbours();
+		int currentNeighCellLabel;
+		for(ThresholdDataPoint neighPixel : neigh){
+			currentNeighCellLabel = neighPixel.getCellBody();
+			/*if the current assumed label is still 0, it should be changed*/
+			if(neighCellLabel == 0){
+				neighCellLabel = currentNeighCellLabel;
+			/*ensure that there are no conflicting neighbours (that aren't background)*/
+			} else if(currentNeighCellLabel != 0 && neighCellLabel != currentNeighCellLabel){
+				throw new IllegalStateException("Neighbouring pixels have "
+						+ "conflicting cell body labels");
+			}
+		}
+		dataPoint.setCellBody(neighCellLabel);
 	}
 
 }

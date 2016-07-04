@@ -22,7 +22,10 @@ public class Neighbours {
 	 * @return an Arraylist of potential neighbours (as PixelPos objects) 
 	 * for the given pixel reference
 	 */
-	public static ArrayList<PixelPos> neighbours(int x, int y, int width, int height){
+	public static ArrayList<PixelPos> neighbours(PixelPos pixelPos, int width, int height){
+		int x = pixelPos.getX();
+		int y = pixelPos.getY();
+		
 		ArrayList<PixelPos> neighbourList = new ArrayList<PixelPos>();
 		
 		int[] xPotential = new int[8];
