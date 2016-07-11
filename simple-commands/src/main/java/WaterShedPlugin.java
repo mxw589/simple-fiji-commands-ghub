@@ -59,7 +59,7 @@ public class WaterShedPlugin implements PlugIn {
 		
 		gd.addChoice("Input", imgNames, imgNames[0]);
 		gd.addSlider("Threshold value", hMin, hMax, 126);
-		
+		gd.addSlider("Erosion/Dilation counter", 0, 10, 3);
 		gd.showDialog();
 		
 		/*
@@ -69,9 +69,11 @@ public class WaterShedPlugin implements PlugIn {
 		if(gd.wasOKed()){
 			ImagePlus chosenImg = WindowManager.getImage(gd.getNextChoiceIndex()+1);
 			Scrollbar threshScroll = (Scrollbar) gd.getSliders().get(0);
+			Scrollbar eroDilScroll = (Scrollbar) gd.getSliders().get(1);
 			double threshVal = 255 - threshScroll.getValue();
+			double eroDilCount = eroDilScroll.getValue();
 			
-			ImagePlus result = process(chosenImg, hMin, hMax, threshVal);
+			ImagePlus result = process(chosenImg, hMin, hMax, threshVal, eroDilCount);
 			
 			result.show();
 		}
@@ -86,10 +88,10 @@ public class WaterShedPlugin implements PlugIn {
 	 * @param threshVal the chosen thresholding value
 	 * @return the resultant image
 	 */
-	private ImagePlus process(ImagePlus chosenImg, double hMin, double hMax, double threshVal) {
+	private ImagePlus process(ImagePlus chosenImg, double hMin, double hMax, double threshVal, double eroDilCount) {
 		final long start = System.currentTimeMillis();
 		
-		ImagePlus resultImg = Watershed.computeWatershed(chosenImg, hMin, hMax, threshVal);
+		ImagePlus resultImg = Watershed.computeWatershed(chosenImg, hMin, hMax, threshVal, eroDilCount);
 		final long end = System.currentTimeMillis();
 		IJ.log("Watershedding took " + (end-start) + " ms.");
 		
@@ -110,6 +112,8 @@ public class WaterShedPlugin implements PlugIn {
 	    image5.show();
 	    ImagePlus image6 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/tiny.bmp");
 	    image6.show();
+	    ImagePlus image7 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/watershed.bmp");
+	    image7.show();
 	    IJ.runPlugIn("WaterShedPlugin", "");
 	}
 	

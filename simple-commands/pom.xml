@@ -32,30 +32,27 @@
 	</repositories>
 	
 	<build>
-	<resources>
-      <resource>
-        <directory>src/main/java</directory>
-        <includes>
-          <include>**/*.config</include>
-        </includes>
-      </resource>
-    </resources>
+		<resources>
+    		<resource>
+    			<directory>src/main/java</directory>
+    		<includes>
+    			<include>**/*.config</include>
+    		</includes>
+    		</resource>
+    	</resources>
 	</build>
 	
 	<dependencies>
-		<!-- When writing ImageJ/Fiji plugins, it is necessary to add a dependency 
-			 to ImageJ jar -->
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>ij</artifactId>
-			</dependency>
+		</dependency>
 	
-		<!-- Add a dependency to JUnit for unit tests --> 
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
-        </dependency>
-        
+        </dependency>    
 	</dependencies>
+
 </project>

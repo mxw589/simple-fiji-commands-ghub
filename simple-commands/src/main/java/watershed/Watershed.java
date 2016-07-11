@@ -7,10 +7,13 @@ import dataTypes.PixelsValues;
 import dataTypes.ThresholdDataPoint;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.process.FloatProcessor;
 import ij.process.ImageProcessor;
+import ij.process.ShortProcessor;
 
 public class Watershed {
+	
+	public final static int WSHED = 9;
+	public final static int CONNEC = 8;
 	
 	/**
 	 * static method to apply the watershedding algorithm to a given image
@@ -20,9 +23,9 @@ public class Watershed {
 	 * @param threshVal the threshold value to be applied
 	 * @return the altered image
 	 */
-	public static ImagePlus computeWatershed(ImagePlus chosenImg, double hMin, double hMax, double threshVal) {
+	public static ImagePlus computeWatershed(ImagePlus chosenImg, double hMin, double hMax, double threshVal, double eroDilCount) {
 
-		ImageProcessor ip = apply(chosenImg.getProcessor(), hMin, hMax, threshVal);
+		ImageProcessor ip = apply(chosenImg.getProcessor(), hMin, hMax, threshVal, eroDilCount);
 
 		String title = chosenImg.getTitle();
 		String ext = "";
@@ -52,7 +55,7 @@ public class Watershed {
 	 * @param threshVal the threshold value to be applied
 	 * @return
 	 */
-	public static ImageProcessor apply(ImageProcessor input, double hMin, double hMax, double threshVal){
+	public static ImageProcessor apply(ImageProcessor input, double hMin, double hMax, double threshVal, double eroDilCount){
 		final int width = input.getWidth();
 		IJ.log("Width: " + width);
 		final int height = input.getHeight();
@@ -86,24 +89,26 @@ public class Watershed {
 		 */
 		Threshold.threshold(pixelList, labelled, threshVal, foregroundLabel);
 		
-		/*
-		 * DEBUG printing the labels after thresholding
-		 */
-		String currLine = "";
-		
-		for(int heightPr = 0; heightPr < labelled[0].length; heightPr++){
-			for(int widthPr = 0; widthPr < labelled.length; widthPr++){
-				currLine += " " + labelled[widthPr][heightPr].getLabel();
-			}
-			IJ.log(currLine);
-			currLine = "";
-		}
+//		/*
+//		 * DEBUG printing the labels after thresholding
+//		 */
+//		String currLine = "";
+//		
+//		for(int heightPr = 0; heightPr < labelled[0].length; heightPr++){
+//			for(int widthPr = 0; widthPr < labelled.length; widthPr++){
+//				currLine += " " + labelled[widthPr][heightPr].getLabel();
+//			}
+//			IJ.log(currLine);
+//			currLine = "";
+//		}
 		
 		/*
 		 * eroding
 		 */
-		Erode.erode(labelled, backgroundLabel, foregroundLabel, width, height);
-		
+		int eroDilCountInt = (int) eroDilCount;
+		for(int i = 0; i<eroDilCount; i++){
+			Erode.erode(labelled, backgroundLabel, foregroundLabel, width, height);
+		}
 		
 		/*
 		 * set the neighbours
@@ -113,24 +118,26 @@ public class Watershed {
 		/*
 		 * set the initial labels for the cell bodies
 		 */
-		initialCellBodyLabel(labelled, backgroundLabel, foregroundLabel);
+		initialCellBodyLabel(labelled, backgroundLabel, foregroundLabel, CONNEC);
 		
 		/*
 		 * dilating
 		 */
-		Dilate.dilate(labelled, backgroundLabel, foregroundLabel, width, height);
+		for(int i = 0; i<eroDilCount; i++){
+			Dilate.dilate(labelled, backgroundLabel, foregroundLabel, width, height);
+		}
 		
 		/*
 		 * taking the array of labels and turning it into an image for the user
 		 */
-		FloatProcessor fp = new FloatProcessor(width, height);
+		ShortProcessor sp = new ShortProcessor(width, height);
 		for(int widthFP = 0; widthFP < width; widthFP++){
 			for(int heightFP = 0; heightFP < height; heightFP++){
-				fp.set(widthFP, heightFP, labelled[widthFP][heightFP].getLabel());
+				sp.set(widthFP, heightFP, labelled[widthFP][heightFP].getCellBody());
 			}
 		}
 		
-		return fp;
+		return sp;
 		
 	}
 
@@ -179,39 +186,45 @@ public class Watershed {
 	 * @param width the width of the image
 	 * @param height the height of the image
 	 */
-	private static void establishNeighbours(ThresholdDataPoint labelled[][], int width, int height){
-		IJ.showStatus("Establishing neighbours");
-		IJ.log("Establishing neighbours");
-		long start = System.currentTimeMillis();
+	public static void establishNeighbours(ThresholdDataPoint labelled[][], int width, int height){
 		
-		ArrayList<ThresholdDataPoint> neighTDP;
+		ArrayList<ThresholdDataPoint> neighEightTDP;
+		ArrayList<ThresholdDataPoint> neighFourTDP;
 		int xPos;
 		int yPos;
-		ArrayList<PixelPos> neighPix;
+		ArrayList<PixelPos> neighEightPix;
+		ArrayList<PixelPos> neighFourPix;
 		PixelPos pixelPos;
 		
 		for(int x = 0; x < width; x++){
 			for(int y = 0; y < height; y++){
 				pixelPos = new PixelPos(x, y);
-				neighTDP = new ArrayList<ThresholdDataPoint>();
-				neighPix = Neighbours.neighbours(pixelPos, width, height);
+				neighEightTDP = new ArrayList<ThresholdDataPoint>();
+				neighEightPix = Neighbours.neighbours(pixelPos, width, height, 8);
+				
+				neighFourTDP = new ArrayList<ThresholdDataPoint>();
+				neighFourPix = Neighbours.neighbours(pixelPos, width, height, 4);
 
-				for(PixelPos neigh : neighPix){
+				for(PixelPos neigh : neighEightPix){
 					xPos = neigh.getX();
 					yPos = neigh.getY();
-					neighTDP.add(labelled[xPos][yPos]);
+					neighEightTDP.add(labelled[xPos][yPos]);
 				}
 				
-				labelled[x][y].setNeighbours(neighTDP);
+				labelled[x][y].setNeighbours(neighEightTDP, 8);
+				
+				for(PixelPos neigh : neighFourPix){
+					xPos = neigh.getX();
+					yPos = neigh.getY();
+					neighFourTDP.add(labelled[xPos][yPos]);
+				}
+				
+				labelled[x][y].setNeighbours(neighFourTDP, 4);
 			}
 		}
-		
-		long end = System.currentTimeMillis();
-		IJ.log("Establishing neighbours took " + (end-start) + " ms.");
-		
 	}
 	
-	public static void initialCellBodyLabel(ThresholdDataPoint[][] labelled, int backgroundLabel, int foregroundLabel){
+	public static void initialCellBodyLabel(ThresholdDataPoint[][] labelled, int backgroundLabel, int foregroundLabel, int connec){
 		int currentNextLabel = 1;
 		
 		for(ThresholdDataPoint[] row : labelled){
@@ -219,7 +232,7 @@ public class Watershed {
 				/*if the pixel is part of a cell body*/
 				if(element.getLabel() != backgroundLabel){
 					/*get its neighbours label*/
-					getNeighboursCellLabel(element);
+					getNeighboursCellLabel(element, connec);
 					/*if it is zero then this should be treated as an as yet 
 					 * unlabelled cell body*/
 					if(element.getCellBody() == 0){
@@ -236,9 +249,9 @@ public class Watershed {
 	 * been labelled yet
 	 * @param dataPoint the point to be labelled
 	 */
-	public static void getNeighboursCellLabel(ThresholdDataPoint dataPoint){
+	public static void getNeighboursCellLabel(ThresholdDataPoint dataPoint, int connec){
 		int neighCellLabel = 0;
-		ArrayList<ThresholdDataPoint> neigh = dataPoint.getNeighbours();
+		ArrayList<ThresholdDataPoint> neigh = dataPoint.getNeighbours(connec);
 		int currentNeighCellLabel;
 		for(ThresholdDataPoint neighPixel : neigh){
 			currentNeighCellLabel = neighPixel.getCellBody();

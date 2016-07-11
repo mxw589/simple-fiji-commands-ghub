@@ -34,7 +34,7 @@ public class Erode {
 				if(labelled[x][y].getLabel() == foregroundLabel){
 					PixelPos pixelPos = new PixelPos(x,y);
 					/*generate an arraylist of valid neighbours for the point*/
-					ArrayList<PixelPos> neighbours = Neighbours.neighbours(pixelPos, width, height);
+					ArrayList<PixelPos> neighbours = Neighbours.neighbours(pixelPos, width, height, 8);
 					/*check if the neighbours mean the point should be eroded*/
 					boolean neighbourCheck = true;
 					for(PixelPos p : neighbours){
@@ -58,20 +58,22 @@ public class Erode {
 			}
 		}
 
+		Watershed.establishNeighbours(labelled, width, height);
+		
 		long end = System.currentTimeMillis();
 		IJ.log("Eroding took " + (end-start) + " ms.");
 
-		/*
-		 * DEBUG log the result
-		 */
-		String currLine = "";
-
-		for(int heightPr = 0; heightPr < height; heightPr++){
-			for(int widthPr = 0; widthPr < width; widthPr++){
-				currLine += " " + labelled[widthPr][heightPr].getLabel();
-			}
-			IJ.log(currLine);
-			currLine = "";
-		}
+//		/*
+//		 * DEBUG log the result
+//		 */
+//		String currLine = "";
+//
+//		for(int heightPr = 0; heightPr < height; heightPr++){
+//			for(int widthPr = 0; widthPr < width; widthPr++){
+//				currLine += " " + labelled[widthPr][heightPr].getLabel();
+//			}
+//			IJ.log(currLine);
+//			currLine = "";
+//		}
 	}
 }
