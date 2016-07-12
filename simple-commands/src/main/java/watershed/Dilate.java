@@ -82,13 +82,13 @@ public class Dilate {
 		
 		Watershed.establishNeighbours(labelled, width, height);
 		
-//		/*
-//		 * DEBUG log the result
-//		 */
+		/*
+		 * DEBUG log the result
+		 */
 //		String currLine = "";
 //
-//		for(int heightPr = 0; heightPr < height; heightPr++){
-//			for(int widthPr = 0; widthPr < width; widthPr++){
+//		for(int heightPr = 110; heightPr < 160; heightPr++){
+//			for(int widthPr = 170; widthPr < 220; widthPr++){
 //				currLine += " " + labelled[widthPr][heightPr].getCellBody();
 //			}
 //			IJ.log(currLine);

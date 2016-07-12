@@ -2,6 +2,7 @@ package watershed;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import dataTypes.CellsToMerge;
 import dataTypes.PixelPos;
 import dataTypes.PixelsValues;
 import dataTypes.ThresholdDataPoint;
@@ -60,6 +61,9 @@ public class Watershed {
 		IJ.log("Width: " + width);
 		final int height = input.getHeight();
 		IJ.log("Height: " + height);
+		
+		double minVal = input.getMin();
+		double maxVal = input.getMax();
 
 		// output labels
 		final ThresholdDataPoint[][] labelled = new ThresholdDataPoint[width][height];
@@ -77,7 +81,7 @@ public class Watershed {
 		IJ.showStatus( "Extracting coloration values");
 		IJ.log("Extracting coloration values");
 		
-		ArrayList<PixelsValues> pixelList = extractPixelValues(input, hMin, hMax );
+		ArrayList<PixelsValues> pixelList = extractPixelValues(input, minVal, maxVal);
 
 		IJ.showStatus("Sorting pixels by coloration value");
 		IJ.log("Sorting pixels by coloration value");
@@ -166,8 +170,14 @@ public class Watershed {
 				/*
 				 * get the coloration value of the given pixel
 				 */
-				final double h = input.getf(x, y);
-				if( h >= hMin && h <= hMax ){
+				double h = input.getf(x, y);
+				
+				double range = hMax - hMin;
+				
+				double scaling = range/255;
+				h = (h - hMin)/scaling;
+				h = 255 - h;
+				if(h >= 0 && h <= 255){
 					PixelPos currPos = new PixelPos(x, y);
 					list.add(new PixelsValues(currPos, h, pixelNo));
 				}
@@ -224,32 +234,107 @@ public class Watershed {
 		}
 	}
 	
+	/**
+	 * after the cell bodies have been eroded to the point that they are seperate
+	 * entities, they can be labelled as individual cells
+	 * @param labelled the threshold data points that represent the image
+	 * @param backgroundLabel the integer used for labelling background elements
+	 * @param foregroundLabel the integer used for labelling foreground elements
+	 * @param connec the connectedness to be used (4 or 8)
+	 */
 	public static void initialCellBodyLabel(ThresholdDataPoint[][] labelled, int backgroundLabel, int foregroundLabel, int connec){
 		int currentNextLabel = 1;
+		ArrayList<CellsToMerge> cells = new ArrayList<CellsToMerge>();
+		cells.add(new CellsToMerge(0, false));
 		
 		for(ThresholdDataPoint[] row : labelled){
 			for(ThresholdDataPoint element: row){
 				/*if the pixel is part of a cell body*/
 				if(element.getLabel() != backgroundLabel){
 					/*get its neighbours label*/
-					getNeighboursCellLabel(element, connec);
+					
+					getNeighboursCellLabel(element, connec, cells);
+
 					/*if it is zero then this should be treated as an as yet 
 					 * unlabelled cell body*/
 					if(element.getCellBody() == 0){
 						element.setCellBody(currentNextLabel);
+						cells.add(new CellsToMerge(currentNextLabel, false));
 						currentNextLabel++;
 					}
 				}
 			}
 		}
+//		IJ.log("Before merging problem bodies");
+//		/*
+//		 * DEBUG log the result
+//		 */
+//		String currLine = "";
+//
+//		for(int heightPr = 110; heightPr < 160; heightPr++){
+//			for(int widthPr = 170; widthPr < 220; widthPr++){
+//				currLine += " " + labelled[widthPr][heightPr].getCellBody();
+//			}
+//			IJ.log(currLine);
+//			currLine = "";
+//		}
+		
+		mergeCellBodies(labelled, cells);
+		
+//		IJ.log("After merging problem bodies");
+//		/*
+//		 * DEBUG log the result
+//		 */
+//		currLine = "";
+//
+//		for(int heightPr = 110; heightPr < 160; heightPr++){
+//			for(int widthPr = 170; widthPr < 220; widthPr++){
+//				currLine += " " + labelled[widthPr][heightPr].getCellBody();
+//			}
+//			IJ.log(currLine);
+//			currLine = "";
+//		}
 	}
+	
+	/**
+	 * takes in a Set of cells that need to merged together due to their connectedness
+	 * having been discovered, and applies this change for everything in the set
+	 * @param labelled the data points that have cell bodies that need to be merged
+	 * @param cellsToMerge the set of data that indicates which cell bodies need to
+	 * be merged
+	 */
+	public static void mergeCellBodies(ThresholdDataPoint[][] labelled, ArrayList<CellsToMerge> cells){
+		for(CellsToMerge cell : cells){
+			int initialCell = cell.getCellBody();
+			
+			CellsToMerge parentCell = cell;
+			while(parentCell.getParent() != null){
+				parentCell = parentCell.getParent();
+			}
+			
+			int masterCell = parentCell.getCellBody();
+			
+			if(initialCell != masterCell){
+				for(ThresholdDataPoint[] row : labelled){
+					for(ThresholdDataPoint element: row){
+						if(element.getCellBody() == initialCell){
+							element.setCellBody(masterCell);
+						}
+					}
+				}
+			}
+		}
+		
+	}
+	
 	/**
 	 * sets the value of a ThresholdDataPoint's cell body to that of its
 	 * neighbours. This should return 0 if none of the neighbours have 
 	 * been labelled yet
 	 * @param dataPoint the point to be labelled
+	 * @param cells 
 	 */
-	public static void getNeighboursCellLabel(ThresholdDataPoint dataPoint, int connec){
+	public static void getNeighboursCellLabel(ThresholdDataPoint dataPoint, int connec, ArrayList<CellsToMerge> cells){
 		int neighCellLabel = 0;
 		ArrayList<ThresholdDataPoint> neigh = dataPoint.getNeighbours(connec);
 		int currentNeighCellLabel;
@@ -258,10 +343,25 @@ public class Watershed {
 			/*if the current assumed label is still 0, it should be changed*/
 			if(neighCellLabel == 0){
 				neighCellLabel = currentNeighCellLabel;
-			/*ensure that there are no conflicting neighbours (that aren't background)*/
+			/*ensure that there are no conflicting neighbours (that aren't background)
+			 * if there are then this indicates cell bodies that should be merged*/
 			} else if(currentNeighCellLabel != 0 && neighCellLabel != currentNeighCellLabel){
-				throw new IllegalStateException("Neighbouring pixels have "
-						+ "conflicting cell body labels");
+				CellsToMerge lockedCell = cells.get(neighCellLabel).root();
+//				System.out.println("locked cell no: " + cells.get(neighCellLabel).getCellBody() + 
+//						" locked cell root: " + lockedCell.getCellBody());
+				CellsToMerge recentCell = cells.get(currentNeighCellLabel).root();
+//				System.out.println("recent cell no: " + cells.get(currentNeighCellLabel).getCellBody() + 
+//						" recent cell root: " + recentCell.getCellBody());
+				
+				if(lockedCell.getCellBody() < recentCell.getCellBody()){
+//					System.out.println("setting parent of: " + recentCell.getCellBody() + " to: " + lockedCell.getCellBody());
+					recentCell.setParent(lockedCell);
+				} else if(lockedCell.getCellBody() > recentCell.getCellBody()){
+//					System.out.println("setting parent of: " + lockedCell.getCellBody() + " to: " + recentCell.getCellBody());
+					lockedCell.setParent(recentCell);
+				}
+				
+				dataPoint.setCellBody(neighCellLabel);
 			}
 		}
 		dataPoint.setCellBody(neighCellLabel);

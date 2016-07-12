@@ -58,8 +58,8 @@ public class WaterShedPlugin implements PlugIn {
 		GenericDialog gd = new GenericDialog("Watershed");
 		
 		gd.addChoice("Input", imgNames, imgNames[0]);
-		gd.addSlider("Threshold value", hMin, hMax, 126);
-		gd.addSlider("Erosion/Dilation counter", 0, 10, 3);
+		gd.addSlider("Threshold value", hMin, hMax, 54);
+		gd.addSlider("Erosion/Dilation counter", 0, 10, 5);
 		gd.showDialog();
 		
 		/*
@@ -70,7 +70,7 @@ public class WaterShedPlugin implements PlugIn {
 			ImagePlus chosenImg = WindowManager.getImage(gd.getNextChoiceIndex()+1);
 			Scrollbar threshScroll = (Scrollbar) gd.getSliders().get(0);
 			Scrollbar eroDilScroll = (Scrollbar) gd.getSliders().get(1);
-			double threshVal = 255 - threshScroll.getValue();
+			double threshVal = hMax - threshScroll.getValue();
 			double eroDilCount = eroDilScroll.getValue();
 			
 			ImagePlus result = process(chosenImg, hMin, hMax, threshVal, eroDilCount);
@@ -100,20 +100,22 @@ public class WaterShedPlugin implements PlugIn {
 	
 	public static void main(String[] args) {
 		new ImageJ();
-	    ImagePlus image1 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/large_dots.bmp");
-	    image1.show();
-	    ImagePlus image2 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/dots.bmp");
-	    image2.show();
-	    ImagePlus image3 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/dots_gradient.bmp");
-	    image3.show();
-	    ImagePlus image4 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/gradient.bmp");
-	    image4.show();
-	    ImagePlus image5 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/larger_test.bmp");
-	    image5.show();
-	    ImagePlus image6 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/tiny.bmp");
-	    image6.show();
-	    ImagePlus image7 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/watershed.bmp");
+//	    ImagePlus image1 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/large_dots.bmp");
+//	    image1.show();
+//	    ImagePlus image2 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/dots.bmp");
+//	    image2.show();
+//	    ImagePlus image3 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/dots_gradient.bmp");
+//	    image3.show();
+//	    ImagePlus image4 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/gradient.bmp");
+//	    image4.show();
+//	    ImagePlus image5 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/larger_test.bmp");
+//	    image5.show();
+//	    ImagePlus image6 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/tiny.bmp");
+//	    image6.show();
+	    ImagePlus image7 = IJ.openImage("/Users/Mark/Documents/Project/Test_Images/BMP/6_FITC-sample.tif");
 	    image7.show();
+	    ImagePlus image8 = IJ.openImage("/Users/Mark/Documents/Project/Images/6_FITC.tif");
+	    image8.show();
 	    IJ.runPlugIn("WaterShedPlugin", "");
 	}
 	
