@@ -38,7 +38,7 @@ public class Watershed {
 		}
 
 		ImagePlus imageWSApplied = new ImagePlus(title + "-watershed" + ext, ip);
-		imageWSApplied.setCalibration( chosenImg.getCalibration() );
+		imageWSApplied.setCalibration(chosenImg.getCalibration());
 
 		return imageWSApplied;
 
@@ -134,11 +134,32 @@ public class Watershed {
 		/*
 		 * taking the array of labels and turning it into an image for the user
 		 */
+		
+		/*brighten the image*/
+		brighten(labelled, backgroundLabel);
+		
 		ShortProcessor sp = new ShortProcessor(width, height);
 		for(int widthFP = 0; widthFP < width; widthFP++){
 			for(int heightFP = 0; heightFP < height; heightFP++){
 				sp.set(widthFP, heightFP, labelled[widthFP][heightFP].getCellBody());
 			}
+		}
+		
+		IJ.log("Brightness sample");
+		/*
+		 * DEBUG log the result
+		 */
+		String currLine = "";
+
+		for(int heightPr = 0; heightPr < height; heightPr++){
+			for(int widthPr = 0; widthPr < width; widthPr++){
+				if(heightPr % 5 == 0 && widthPr % 5 == 0){
+				currLine += " " + labelled[widthPr][heightPr].getCellBody();
+				}
+			}
+			if(heightPr % 5 == 0){
+			IJ.log(currLine);
+			currLine = "";}
 		}
 		
 		return sp;
@@ -365,6 +386,15 @@ public class Watershed {
 			}
 		}
 		dataPoint.setCellBody(neighCellLabel);
+	}
+	
+	public static void brighten(ThresholdDataPoint[][] labelled, int backgroundLabel){
+		for(ThresholdDataPoint[] row : labelled){
+			for(ThresholdDataPoint element: row){
+				if(element.getCellBody() != 0){
+				element.setCellBody(element.getCellBody() + 10);}
+			}
+		}
 	}
 
 }

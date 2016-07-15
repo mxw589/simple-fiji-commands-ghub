@@ -85,15 +85,15 @@ public class Dilate {
 		/*
 		 * DEBUG log the result
 		 */
-//		String currLine = "";
-//
-//		for(int heightPr = 110; heightPr < 160; heightPr++){
-//			for(int widthPr = 170; widthPr < 220; widthPr++){
-//				currLine += " " + labelled[widthPr][heightPr].getCellBody();
-//			}
-//			IJ.log(currLine);
-//			currLine = "";
-//		}
+		String currLine = "";
+
+		for(int heightPr = 90; heightPr < 160; heightPr++){
+			for(int widthPr = 170; widthPr < 220; widthPr++){
+				currLine += " " + labelled[widthPr][heightPr].getCellBody();
+			}
+			IJ.log(currLine);
+			currLine = "";
+		}
 		
 		long end = System.currentTimeMillis();
 		IJ.log("Dilating took " + (end-start) + " ms.");

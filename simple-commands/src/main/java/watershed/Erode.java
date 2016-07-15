@@ -63,17 +63,17 @@ public class Erode {
 		long end = System.currentTimeMillis();
 		IJ.log("Eroding took " + (end-start) + " ms.");
 
-//		/*
-//		 * DEBUG log the result
-//		 */
-//		String currLine = "";
-//
-//		for(int heightPr = 110; heightPr < 160; heightPr++){
-//			for(int widthPr = 170; widthPr < 220; widthPr++){
-//				currLine += " " + labelled[widthPr][heightPr].getLabel();
-//			}
-//			IJ.log(currLine);
-//			currLine = "";
-//		}
+		/*
+		 * DEBUG log the result
+		 */
+		String currLine = "";
+
+		for(int heightPr = 90; heightPr < 160; heightPr++){
+			for(int widthPr = 170; widthPr < 220; widthPr++){
+				currLine += " " + labelled[widthPr][heightPr].getLabel();
+			}
+			IJ.log(currLine);
+			currLine = "";
+		}
 	}
 }
